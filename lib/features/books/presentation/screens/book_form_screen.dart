@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:library_leo/core/utils/validators.dart';
 import 'package:library_leo/features/books/domain/entities/book.dart';
-import 'package:library_leo/features/books/presentation/viewmodels/books_viewmodel.dart';
+import 'package:library_leo/features/books/presentation/providers/books_provider.dart';
 
 class BookFormScreen extends StatefulWidget {
   final Book? bookToEdit;
@@ -40,7 +40,7 @@ class _BookFormScreenState extends State<BookFormScreen> {
 
   void _saveBook() async {
     if (_formKey.currentState!.validate()) {
-      final viewModel = context.read<BooksViewModel>();
+      final provider = context.read<BooksProvider>();
       
       final book = Book(
         id: widget.bookToEdit?.id ?? '',
@@ -53,9 +53,9 @@ class _BookFormScreenState extends State<BookFormScreen> {
 
       bool success;
       if (widget.bookToEdit == null) {
-        success = await viewModel.createBook(book);
+        success = await provider.createBook(book);
       } else {
-        success = await viewModel.updateBook(book);
+        success = await provider.updateBook(book);
       }
 
       if (success && mounted) {
@@ -65,7 +65,7 @@ class _BookFormScreenState extends State<BookFormScreen> {
         );
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(viewModel.errorMessage ?? 'Error al guardar el libro')),
+          SnackBar(content: Text(provider.errorMessage ?? 'Error al guardar el libro')),
         );
       }
     }
@@ -79,8 +79,8 @@ class _BookFormScreenState extends State<BookFormScreen> {
       appBar: AppBar(
         title: Text(isEditing ? 'Editar Libro' : 'Nuevo Libro'),
       ),
-      body: Consumer<BooksViewModel>(
-        builder: (context, viewModel, child) {
+      body: Consumer<BooksProvider>(
+        builder: (context, provider, child) {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
             child: Form(
@@ -114,8 +114,8 @@ class _BookFormScreenState extends State<BookFormScreen> {
                   ),
                   const SizedBox(height: 32),
                   ElevatedButton(
-                    onPressed: viewModel.isLoading ? null : _saveBook,
-                    child: viewModel.isLoading
+                    onPressed: provider.isLoading ? null : _saveBook,
+                    child: provider.isLoading
                         ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2))
                         : Text(isEditing ? 'ACTUALIZAR' : 'CREAR'),
                   ),

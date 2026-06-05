@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:library_leo/app_state.dart';
 import 'package:library_leo/core/utils/validators.dart';
-import 'package:library_leo/features/auth/presentation/viewmodels/auth_viewmodel.dart';
-import 'package:library_leo/features/auth/presentation/widgets/auth_text_field.dart';
+import 'package:library_leo/features/auth/presentation/providers/auth_provider.dart';
+import 'package:library_leo/features/auth/presentation/components/auth_text_field.dart';
 import 'package:library_leo/features/books/presentation/screens/book_list_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -30,8 +30,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _register() async {
     if (_formKey.currentState!.validate()) {
-      final viewModel = context.read<AuthViewModel>();
-      final success = await viewModel.register(
+      final provider = context.read<AuthProvider>();
+      final success = await provider.register(
         _nameController.text.trim(),
         _emailController.text.trim(),
         _passwordController.text,

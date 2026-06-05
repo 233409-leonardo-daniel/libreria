@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:library_leo/app_state.dart';
-import 'package:library_leo/features/books/presentation/viewmodels/books_viewmodel.dart';
+import 'package:library_leo/features/books/presentation/providers/books_provider.dart';
 import 'package:library_leo/features/books/presentation/screens/book_detail_screen.dart';
 import 'package:library_leo/features/books/presentation/screens/book_form_screen.dart';
-import 'package:library_leo/features/books/presentation/widgets/book_card.dart';
+import 'package:library_leo/features/books/presentation/components/book_card.dart';
 import 'package:library_leo/features/profile/presentation/screens/profile_screen.dart';
 
 class BookListScreen extends StatefulWidget {
@@ -19,7 +19,7 @@ class _BookListScreenState extends State<BookListScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<BooksViewModel>().loadBooks();
+      context.read<BooksProvider>().loadBooks();
     });
   }
 
@@ -39,20 +39,20 @@ class _BookListScreenState extends State<BookListScreen> {
           ),
         ],
       ),
-      body: Consumer<BooksViewModel>(
-        builder: (context, viewModel, child) {
-          if (viewModel.isLoading && viewModel.books.isEmpty) {
+      body: Consumer<BooksProvider>(
+        builder: (context, provider, child) {
+          if (provider.isLoading && provider.books.isEmpty) {
             return const Center(child: CircularProgressIndicator());
           }
 
-          if (viewModel.errorMessage != null && viewModel.books.isEmpty) {
+          if (provider.errorMessage != null && provider.books.isEmpty) {
             return Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Error: ${viewModel.errorMessage}'),
+                  Text('Error: ${provider.errorMessage}'),
                   ElevatedButton(
-                    onPressed: viewModel.loadBooks,
+                    onPressed: provider.loadBooks,
                     child: const Text('Reintentar'),
                   ),
                 ],
@@ -60,12 +60,12 @@ class _BookListScreenState extends State<BookListScreen> {
             );
           }
 
-          if (viewModel.books.isEmpty) {
+          if (provider.books.isEmpty) {
             return const Center(child: Text('No hay libros disponibles.'));
           }
 
           return RefreshIndicator(
-            onRefresh: viewModel.loadBooks,
+            onRefresh: provider.loadBooks,
             child: GridView.builder(
               padding: const EdgeInsets.all(16),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -74,12 +74,12 @@ class _BookListScreenState extends State<BookListScreen> {
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
               ),
-              itemCount: viewModel.books.length,
+              itemCount: provider.books.length,
               itemBuilder: (context, index) {
-                final book = viewModel.books[index];
+                final book = provider.books[index];
                 return BookCard(
                   book: book,
-                  isFavorite: viewModel.isFavorite(book.id),
+                  isFavorite: provider.isFavorite(book.id),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -88,7 +88,7 @@ class _BookListScreenState extends State<BookListScreen> {
                     );
                   },
                   onFavoriteToggle: () {
-                    viewModel.toggleFavorite(book.id);
+                    provider.toggleFavorite(book.id);
                   },
                 );
               },

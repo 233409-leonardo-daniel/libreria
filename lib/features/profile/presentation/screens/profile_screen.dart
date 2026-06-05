@@ -3,14 +3,14 @@ import 'package:provider/provider.dart';
 import 'package:library_leo/app_state.dart';
 import 'package:library_leo/features/auth/presentation/screens/login_screen.dart';
 import 'package:library_leo/features/books/presentation/screens/book_detail_screen.dart';
-import 'package:library_leo/features/profile/presentation/viewmodels/profile_viewmodel.dart';
-import 'package:library_leo/features/profile/presentation/widgets/reading_progress_widget.dart';
+import 'package:library_leo/features/profile/presentation/providers/profile_provider.dart';
+import 'package:library_leo/features/profile/presentation/components/reading_progress_widget.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   void _logout(BuildContext context) {
-    context.read<ProfileViewModel>().logout();
+    context.read<ProfileProvider>().logout();
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
@@ -30,13 +30,13 @@ class ProfileScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: Consumer2<AppState, ProfileViewModel>(
-        builder: (context, appState, profileViewModel, child) {
+      body: Consumer2<AppState, ProfileProvider>(
+        builder: (context, appState, profileProvider, child) {
           final user = appState.currentUser;
           if (user == null) return const Center(child: Text('No hay usuario logueado'));
 
-          final favoriteBooks = profileViewModel.favoriteBooks;
-          final pendingBooks = profileViewModel.pendingBooks;
+          final favoriteBooks = profileProvider.favoriteBooks;
+          final pendingBooks = profileProvider.pendingBooks;
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),
@@ -94,7 +94,7 @@ class ProfileScreen extends StatelessWidget {
                     itemCount: pendingBooks.length,
                     itemBuilder: (context, index) {
                       final fav = pendingBooks[index];
-                      final book = profileViewModel.getBookForFavorite(fav.bookId);
+                      final book = profileProvider.getBookForFavorite(fav.bookId);
                       if (book == null) return const SizedBox.shrink();
 
                       return Card(
@@ -136,7 +136,7 @@ class ProfileScreen extends StatelessWidget {
                     itemCount: favoriteBooks.length,
                     itemBuilder: (context, index) {
                       final book = favoriteBooks[index];
-                      final fav = profileViewModel.userFavorites.firstWhere((f) => f.bookId == book.id);
+                      final fav = profileProvider.userFavorites.firstWhere((f) => f.bookId == book.id);
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 8.0),

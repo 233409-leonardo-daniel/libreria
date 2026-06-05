@@ -1,47 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:http/http.dart' as http;
 
-import 'package:library_leo/app_state.dart';
 import 'package:library_leo/core/themes/app_theme.dart';
-import 'package:library_leo/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:library_leo/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:library_leo/core/di/core_di.dart';
+import 'package:library_leo/features/auth/di/auth_di.dart';
 import 'package:library_leo/features/auth/presentation/screens/login_screen.dart';
-import 'package:library_leo/features/auth/presentation/viewmodels/auth_viewmodel.dart';
-import 'package:library_leo/features/books/data/datasources/books_remote_datasource.dart';
-import 'package:library_leo/features/books/data/repositories/books_repository_impl.dart';
-import 'package:library_leo/features/books/presentation/viewmodels/books_viewmodel.dart';
-import 'package:library_leo/features/profile/presentation/viewmodels/profile_viewmodel.dart';
+import 'package:library_leo/features/books/di/books_di.dart';
+import 'package:library_leo/features/profile/di/profile_di.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Manual Dependency Injection
-  final httpClient = http.Client();
-  
-  // Data Sources
-  final authRemoteDataSource = AuthRemoteDataSource(httpClient);
-  final booksRemoteDataSource = BooksRemoteDataSource(httpClient);
-  
-  // Repositories
-  final authRepository = AuthRepositoryImpl(authRemoteDataSource);
-  final booksRepository = BooksRepositoryImpl(booksRemoteDataSource);
-  
-  // Global App State
-  final appState = AppState();
+  // Core Dependency Injection
+  final coreDI = CoreDI();
 
-  // ViewModels
-  final authViewModel = AuthViewModel(authRepository, appState);
-  final booksViewModel = BooksViewModel(booksRepository, appState);
-  final profileViewModel = ProfileViewModel(booksViewModel, appState);
+  // Feature Dependency Injections
+  final authDI = AuthDI(
+    apiClient: coreDI.apiClient,
+    appState: coreDI.appState,
+  );
+  
+  final booksDI = BooksDI(
+    apiClient: coreDI.apiClient,
+    appState: coreDI.appState,
+  );
+
+  final profileDI = ProfileDI(
+    booksProvider: booksDI.provider,
+    appState: coreDI.appState,
+  );
 
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider.value(value: appState),
-        ChangeNotifierProvider.value(value: authViewModel),
-        ChangeNotifierProvider.value(value: booksViewModel),
-        ChangeNotifierProvider.value(value: profileViewModel),
+        ChangeNotifierProvider.value(value: coreDI.appState),
+        ChangeNotifierProvider.value(value: authDI.provider),
+        ChangeNotifierProvider.value(value: booksDI.provider),
+        ChangeNotifierProvider.value(value: profileDI.provider),
       ],
       child: const MyApp(),
     ),

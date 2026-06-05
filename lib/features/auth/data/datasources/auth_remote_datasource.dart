@@ -1,22 +1,21 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:library_leo/core/constants/api_constants.dart';
+import 'package:library_leo/core/network/api_client.dart';
 import 'package:library_leo/core/utils/firestore_helpers.dart';
 
 class AuthRemoteDataSource {
-  final http.Client client;
+  final ApiClient client;
 
   AuthRemoteDataSource(this.client);
 
   Future<Map<String, dynamic>> signInWithPassword(String email, String password) async {
-    final url = Uri.parse(ApiConstants.signInUrl);
     final response = await client.post(
-      url,
-      body: jsonEncode({
+      ApiConstants.signInUrl,
+      {
         'email': email,
         'password': password,
         'returnSecureToken': true,
-      }),
+      },
     );
 
     if (response.statusCode == 200) {
@@ -28,14 +27,13 @@ class AuthRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> signUp(String email, String password) async {
-    final url = Uri.parse(ApiConstants.signUpUrl);
     final response = await client.post(
-      url,
-      body: jsonEncode({
+      ApiConstants.signUpUrl,
+      {
         'email': email,
         'password': password,
         'returnSecureToken': true,
-      }),
+      },
     );
 
     if (response.statusCode == 200) {
@@ -49,19 +47,17 @@ class AuthRemoteDataSource {
   Future<void> createUserDocument(String userId, Map<String, dynamic> userData, String idToken) async {
     // Firestore REST API requires a PATCH request to create a document with a specific ID
     // URL format: databases/(default)/documents/users/{userId}?documentId={userId}
-    final url = Uri.parse('${ApiConstants.collectionUrl('users')}?documentId=$userId');
+    final url = '${ApiConstants.collectionUrl('users')}?documentId=$userId';
     
     final formattedData = {
       'fields': FirestoreHelpers.buildFields(userData)
     };
 
+    client.setAuthToken(idToken);
+
     final response = await client.post(
       url,
-      headers: {
-        'Authorization': 'Bearer $idToken',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(formattedData),
+      formattedData,
     );
 
     if (response.statusCode != 200 && response.statusCode != 201) {
@@ -71,14 +67,11 @@ class AuthRemoteDataSource {
   }
 
   Future<Map<String, dynamic>?> getUserDocument(String userId, String idToken) async {
-    final url = Uri.parse(ApiConstants.documentUrl('users/$userId'));
+    final url = ApiConstants.documentUrl('users/$userId');
     
-    final response = await client.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $idToken',
-      },
-    );
+    client.setAuthToken(idToken);
+
+    final response = await client.get(url);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);

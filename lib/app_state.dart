@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:library_leo/core/network/api_client.dart';
 import 'package:library_leo/features/auth/domain/entities/user.dart';
 
 class AppState extends ChangeNotifier {
+  final ApiClient? _apiClient;
   bool _isLoading = false;
   User? _currentUser;
   String? _idToken;
   String? _errorMessage;
+
+  AppState({ApiClient? apiClient}) : _apiClient = apiClient;
 
   bool get isLoading => _isLoading;
   User? get currentUser => _currentUser;
@@ -22,6 +26,7 @@ class AppState extends ChangeNotifier {
     _currentUser = user;
     _idToken = token;
     _errorMessage = null;
+    _apiClient?.setAuthToken(token);
     notifyListeners();
   }
 
@@ -39,6 +44,7 @@ class AppState extends ChangeNotifier {
     _currentUser = null;
     _idToken = null;
     _errorMessage = null;
+    _apiClient?.clearAuthToken();
     notifyListeners();
   }
 }

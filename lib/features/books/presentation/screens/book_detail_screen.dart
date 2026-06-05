@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:library_leo/app_state.dart';
-import 'package:library_leo/features/books/presentation/viewmodels/books_viewmodel.dart';
+import 'package:library_leo/features/books/presentation/providers/books_provider.dart';
 import 'package:library_leo/features/books/presentation/screens/book_form_screen.dart';
-import 'package:library_leo/features/books/presentation/widgets/rating_widget.dart';
+import 'package:library_leo/features/books/presentation/components/rating_widget.dart';
 
 class BookDetailScreen extends StatefulWidget {
   final String bookId;
@@ -26,8 +26,8 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
   void _initPageController() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final viewModel = context.read<BooksViewModel>();
-      final favorite = viewModel.getFavorite(widget.bookId);
+      final provider = context.read<BooksProvider>();
+      final favorite = provider.getFavorite(widget.bookId);
       if (favorite != null) {
         _pageController.text = favorite.currentPage.toString();
       }
@@ -40,10 +40,10 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
     super.dispose();
   }
 
-  void _updateProgress(BooksViewModel viewModel, String favoriteId) {
+  void _updateProgress(BooksProvider provider, String favoriteId) {
     final page = int.tryParse(_pageController.text.trim());
     if (page != null) {
-      viewModel.updateFavoriteProgress(favoriteId, page);
+      provider.updateFavoriteProgress(favoriteId, page);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Progreso de lectura actualizado')),
       );
@@ -52,11 +52,11 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<BooksViewModel, AppState>(
-      builder: (context, booksViewModel, appState, child) {
-        final book = booksViewModel.books.firstWhere((b) => b.id == widget.bookId, orElse: () => throw Exception('Book not found'));
-        final isFavorite = booksViewModel.isFavorite(book.id);
-        final favorite = booksViewModel.getFavorite(book.id);
+    return Consumer2<BooksProvider, AppState>(
+      builder: (context, booksProvider, appState, child) {
+        final book = booksProvider.books.firstWhere((b) => b.id == widget.bookId, orElse: () => throw Exception('Book not found'));
+        final isFavorite = booksProvider.isFavorite(book.id);
+        final favorite = booksProvider.getFavorite(book.id);
         final isAdmin = appState.currentUser?.role == 'admin';
 
         return Scaffold(
@@ -92,7 +92,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                 actions: [
                   IconButton(
                     icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: isFavorite ? Colors.red : Colors.white),
-                    onPressed: () => booksViewModel.toggleFavorite(book.id),
+                    onPressed: () => booksProvider.toggleFavorite(book.id),
                   ),
                   if (isAdmin)
                     PopupMenuButton<String>(
@@ -112,7 +112,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                             ),
                           );
                           if (confirm == true) {
-                            final success = await booksViewModel.deleteBook(book.id);
+                            final success = await booksProvider.deleteBook(book.id);
                             if (!context.mounted) return;
                             if (success) Navigator.pop(context);
                           }
@@ -140,7 +140,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                         child: RatingWidget(
                           rating: favorite.rating,
                           onRatingChanged: (newRating) {
-                            booksViewModel.updateFavoriteRating(favorite.id, newRating);
+                            booksProvider.updateFavoriteRating(favorite.id, newRating);
                           },
                         ),
                       ),
@@ -161,7 +161,7 @@ class _BookDetailScreenState extends State<BookDetailScreen> {
                           ),
                           const SizedBox(width: 16),
                           ElevatedButton(
-                            onPressed: () => _updateProgress(booksViewModel, favorite.id),
+                            onPressed: () => _updateProgress(booksProvider, favorite.id),
                             child: const Text('Guardar'),
                           ),
                         ],

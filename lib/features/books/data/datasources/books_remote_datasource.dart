@@ -1,19 +1,17 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:library_leo/core/constants/api_constants.dart';
+import 'package:library_leo/core/network/api_client.dart';
 import 'package:library_leo/core/utils/firestore_helpers.dart';
 
 class BooksRemoteDataSource {
-  final http.Client client;
+  final ApiClient client;
 
   BooksRemoteDataSource(this.client);
 
   Future<List<Map<String, dynamic>>> getBooks(String idToken) async {
-    final url = Uri.parse(ApiConstants.collectionUrl('books'));
-    final response = await client.get(
-      url,
-      headers: {'Authorization': 'Bearer $idToken'},
-    );
+    final url = ApiConstants.collectionUrl('books');
+    client.setAuthToken(idToken);
+    final response = await client.get(url);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -25,16 +23,13 @@ class BooksRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> createBook(Map<String, dynamic> bookData, String idToken) async {
-    final url = Uri.parse(ApiConstants.collectionUrl('books'));
+    final url = ApiConstants.collectionUrl('books');
     final formattedData = {'fields': FirestoreHelpers.buildFields(bookData)};
 
+    client.setAuthToken(idToken);
     final response = await client.post(
       url,
-      headers: {
-        'Authorization': 'Bearer $idToken',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(formattedData),
+      formattedData,
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -45,16 +40,13 @@ class BooksRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> updateBook(String bookId, Map<String, dynamic> bookData, String idToken) async {
-    final url = Uri.parse(ApiConstants.documentUrl('books/$bookId'));
+    final url = ApiConstants.documentUrl('books/$bookId');
     final formattedData = {'fields': FirestoreHelpers.buildFields(bookData)};
 
+    client.setAuthToken(idToken);
     final response = await client.patch(
       url,
-      headers: {
-        'Authorization': 'Bearer $idToken',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(formattedData),
+      formattedData,
     );
 
     if (response.statusCode == 200) {
@@ -65,11 +57,9 @@ class BooksRemoteDataSource {
   }
 
   Future<void> deleteBook(String bookId, String idToken) async {
-    final url = Uri.parse(ApiConstants.documentUrl('books/$bookId'));
-    final response = await client.delete(
-      url,
-      headers: {'Authorization': 'Bearer $idToken'},
-    );
+    final url = ApiConstants.documentUrl('books/$bookId');
+    client.setAuthToken(idToken);
+    final response = await client.delete(url);
 
     if (response.statusCode != 200) {
       throw Exception('Error al eliminar libro');
@@ -81,11 +71,9 @@ class BooksRemoteDataSource {
   Future<List<Map<String, dynamic>>> getFavorites(String idToken) async {
     // Note: This fetches all favorites. In a real app, we would use a structured query (RunQuery) to filter by userId.
     // For simplicity with REST API and without setting up indexes, we fetch and filter locally.
-    final url = Uri.parse(ApiConstants.collectionUrl('favorites'));
-    final response = await client.get(
-      url,
-      headers: {'Authorization': 'Bearer $idToken'},
-    );
+    final url = ApiConstants.collectionUrl('favorites');
+    client.setAuthToken(idToken);
+    final response = await client.get(url);
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -97,16 +85,13 @@ class BooksRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> addFavorite(Map<String, dynamic> favoriteData, String idToken) async {
-    final url = Uri.parse(ApiConstants.collectionUrl('favorites'));
+    final url = ApiConstants.collectionUrl('favorites');
     final formattedData = {'fields': FirestoreHelpers.buildFields(favoriteData)};
 
+    client.setAuthToken(idToken);
     final response = await client.post(
       url,
-      headers: {
-        'Authorization': 'Bearer $idToken',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(formattedData),
+      formattedData,
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
@@ -117,11 +102,9 @@ class BooksRemoteDataSource {
   }
 
   Future<void> removeFavorite(String favoriteId, String idToken) async {
-    final url = Uri.parse(ApiConstants.documentUrl('favorites/$favoriteId'));
-    final response = await client.delete(
-      url,
-      headers: {'Authorization': 'Bearer $idToken'},
-    );
+    final url = ApiConstants.documentUrl('favorites/$favoriteId');
+    client.setAuthToken(idToken);
+    final response = await client.delete(url);
 
     if (response.statusCode != 200) {
       throw Exception('Error al eliminar favorito');
@@ -129,16 +112,13 @@ class BooksRemoteDataSource {
   }
 
   Future<Map<String, dynamic>> updateFavorite(String favoriteId, Map<String, dynamic> favoriteData, String idToken) async {
-    final url = Uri.parse(ApiConstants.documentUrl('favorites/$favoriteId'));
+    final url = ApiConstants.documentUrl('favorites/$favoriteId');
     final formattedData = {'fields': FirestoreHelpers.buildFields(favoriteData)};
 
+    client.setAuthToken(idToken);
     final response = await client.patch(
       url,
-      headers: {
-        'Authorization': 'Bearer $idToken',
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode(formattedData),
+      formattedData,
     );
 
     if (response.statusCode == 200) {
