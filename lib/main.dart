@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
+import 'package:library_leo/features/jsonplaceholder/di/jsonplaceholder_di.dart';
 import 'package:library_leo/core/themes/app_theme.dart';
 import 'package:library_leo/core/di/core_di.dart';
 import 'package:library_leo/features/auth/di/auth_di.dart';
@@ -19,7 +19,7 @@ void main() {
     apiClient: coreDI.apiClient,
     appState: coreDI.appState,
   );
-  
+
   final booksDI = BooksDI(
     apiClient: coreDI.apiClient,
     appState: coreDI.appState,
@@ -30,6 +30,11 @@ void main() {
     appState: coreDI.appState,
   );
 
+  final jsonPlaceholderDI = JsonPlaceholderDI(
+    apiClient: coreDI.apiClient,
+    appState: coreDI.appState,
+  );
+
   runApp(
     MultiProvider(
       providers: [
@@ -37,6 +42,7 @@ void main() {
         ChangeNotifierProvider.value(value: authDI.provider),
         ChangeNotifierProvider.value(value: booksDI.provider),
         ChangeNotifierProvider.value(value: profileDI.provider),
+        ChangeNotifierProvider.value(value: jsonPlaceholderDI.provider),
       ],
       child: const MyApp(),
     ),

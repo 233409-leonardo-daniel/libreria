@@ -6,6 +6,7 @@ import 'package:library_leo/features/books/presentation/screens/book_detail_scre
 import 'package:library_leo/features/books/presentation/screens/book_form_screen.dart';
 import 'package:library_leo/features/books/presentation/components/book_card.dart';
 import 'package:library_leo/features/profile/presentation/screens/profile_screen.dart';
+import 'package:library_leo/features/jsonplaceholder/presentation/screens/jsonplaceholder_screen.dart';
 
 class BookListScreen extends StatefulWidget {
   const BookListScreen({super.key});
@@ -30,7 +31,17 @@ class _BookListScreenState extends State<BookListScreen> {
         title: const Text('Catálogo de Libros'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.forum),
+            tooltip: 'Foro',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const JsonPlaceholderScreen()),
+              );
+            },
+          ),
+          IconButton(
             icon: const Icon(Icons.person),
+            tooltip: 'Perfil',
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const ProfileScreen()),
